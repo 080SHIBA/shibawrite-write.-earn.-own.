@@ -86,7 +86,7 @@ function Header() {
     { l: "Home", h: "#top" },
     { l: "How It Works", to: "/how-it-works" },
     { l: "Marketplace", h: "#marketplace" },
-    { l: "Token ($WORD)", h: "#token" },
+    { l: "Token ($WORD)", to: "/token" },
     { l: "Leaderboard", h: "#leaderboard" },
     { l: "Blog", h: "#blog" },
   ];
