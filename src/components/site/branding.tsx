@@ -25,7 +25,7 @@ export function SiteHeader() {
     { l: "Home", to: "/" as const, hash: undefined },
     { l: "How It Works", to: "/how-it-works" as const, hash: undefined },
     { l: "Marketplace", to: "/" as const, hash: "marketplace" },
-    { l: "Token ($WORD)", to: "/" as const, hash: "token" },
+    { l: "Token ($WORD)", to: "/token" as const, hash: undefined },
     { l: "Leaderboard", to: "/" as const, hash: "leaderboard" },
     { l: "Blog", to: "/" as const, hash: "blog" },
   ];
