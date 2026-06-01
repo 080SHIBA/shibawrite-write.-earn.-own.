@@ -82,9 +82,9 @@ function Landing() {
 
 /* ---------------------------------- Header --------------------------------- */
 function Header() {
-  const nav = [
+  const nav: { l: string; h?: string; to?: string }[] = [
     { l: "Home", h: "#top" },
-    { l: "How It Works", h: "#how" },
+    { l: "How It Works", to: "/how-it-works" },
     { l: "Marketplace", h: "#marketplace" },
     { l: "Token ($WORD)", h: "#token" },
     { l: "Leaderboard", h: "#leaderboard" },
@@ -103,11 +103,17 @@ function Header() {
           </span>
         </Link>
         <nav className="hidden items-center gap-7 text-sm font-medium text-navy-foreground/80 lg:flex">
-          {nav.map((n) => (
-            <a key={n.l} href={n.h} className="transition hover:text-gold">
-              {n.l}
-            </a>
-          ))}
+          {nav.map((n) =>
+            n.to ? (
+              <Link key={n.l} to={n.to} className="transition hover:text-gold">
+                {n.l}
+              </Link>
+            ) : (
+              <a key={n.l} href={n.h} className="transition hover:text-gold">
+                {n.l}
+              </a>
+            ),
+          )}
         </nav>
         <div className="flex items-center gap-3">
           <Button
