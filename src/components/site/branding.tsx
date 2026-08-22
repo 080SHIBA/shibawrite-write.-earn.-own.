@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import {
-  Wallet,
   Twitter,
   MessageCircle,
   Send,
@@ -10,6 +9,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConnectWallet } from "@/components/web3/ConnectWallet";
 
 export function ShibaMark() {
   return (
@@ -54,14 +54,9 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            className="hidden border-gold/60 bg-transparent text-gold hover:bg-gold/10 hover:text-gold md:inline-flex"
-          >
-            <Wallet className="mr-1.5 h-4 w-4" /> Connect Wallet
-          </Button>
-          <Button className="bg-gradient-gold text-navy shadow-gold hover:opacity-95">
-            Start Writing
+          <ConnectWallet />
+          <Button asChild className="bg-gradient-gold text-navy shadow-gold hover:opacity-95">
+            <Link to="/write">Start Writing</Link>
           </Button>
         </div>
       </div>

@@ -14,10 +14,14 @@ import { Route as WalletSetupRouteImport } from './routes/wallet-setup'
 import { Route as TokenRouteImport } from './routes/token'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as NftsRouteImport } from './routes/nfts'
+import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
+import { Route as ProfileAddressRouteImport } from './routes/profile.$address'
 import { Route as PostIdRouteImport } from './routes/post.$id'
+import { Route as MarketplaceIdRouteImport } from './routes/marketplace.$id'
 
 const WriteRoute = WriteRouteImport.update({
   id: '/write',
@@ -44,6 +48,11 @@ const NftsRoute = NftsRouteImport.update({
   path: '/nfts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketplaceRoute = MarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
@@ -59,22 +68,41 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketplaceIndexRoute = MarketplaceIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MarketplaceRoute,
+} as any)
+const ProfileAddressRoute = ProfileAddressRouteImport.update({
+  id: '/profile/$address',
+  path: '/profile/$address',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PostIdRoute = PostIdRouteImport.update({
   id: '/post/$id',
   path: '/post/$id',
   getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceIdRoute = MarketplaceIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => MarketplaceRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/marketplace': typeof MarketplaceRouteWithChildren
   '/nfts': typeof NftsRoute
   '/register': typeof RegisterRoute
   '/token': typeof TokenRoute
   '/wallet-setup': typeof WalletSetupRoute
   '/write': typeof WriteRoute
+  '/marketplace/$id': typeof MarketplaceIdRoute
   '/post/$id': typeof PostIdRoute
+  '/profile/$address': typeof ProfileAddressRoute
+  '/marketplace/': typeof MarketplaceIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,19 +113,26 @@ export interface FileRoutesByTo {
   '/token': typeof TokenRoute
   '/wallet-setup': typeof WalletSetupRoute
   '/write': typeof WriteRoute
+  '/marketplace/$id': typeof MarketplaceIdRoute
   '/post/$id': typeof PostIdRoute
+  '/profile/$address': typeof ProfileAddressRoute
+  '/marketplace': typeof MarketplaceIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/marketplace': typeof MarketplaceRouteWithChildren
   '/nfts': typeof NftsRoute
   '/register': typeof RegisterRoute
   '/token': typeof TokenRoute
   '/wallet-setup': typeof WalletSetupRoute
   '/write': typeof WriteRoute
+  '/marketplace/$id': typeof MarketplaceIdRoute
   '/post/$id': typeof PostIdRoute
+  '/profile/$address': typeof ProfileAddressRoute
+  '/marketplace/': typeof MarketplaceIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -105,12 +140,16 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/how-it-works'
+    | '/marketplace'
     | '/nfts'
     | '/register'
     | '/token'
     | '/wallet-setup'
     | '/write'
+    | '/marketplace/$id'
     | '/post/$id'
+    | '/profile/$address'
+    | '/marketplace/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -121,30 +160,39 @@ export interface FileRouteTypes {
     | '/token'
     | '/wallet-setup'
     | '/write'
+    | '/marketplace/$id'
     | '/post/$id'
+    | '/profile/$address'
+    | '/marketplace'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/how-it-works'
+    | '/marketplace'
     | '/nfts'
     | '/register'
     | '/token'
     | '/wallet-setup'
     | '/write'
+    | '/marketplace/$id'
     | '/post/$id'
+    | '/profile/$address'
+    | '/marketplace/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  MarketplaceRoute: typeof MarketplaceRouteWithChildren
   NftsRoute: typeof NftsRoute
   RegisterRoute: typeof RegisterRoute
   TokenRoute: typeof TokenRoute
   WalletSetupRoute: typeof WalletSetupRoute
   WriteRoute: typeof WriteRoute
   PostIdRoute: typeof PostIdRoute
+  ProfileAddressRoute: typeof ProfileAddressRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -184,6 +232,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NftsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/marketplace': {
+      id: '/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/how-it-works': {
       id: '/how-it-works'
       path: '/how-it-works'
@@ -205,6 +260,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/marketplace/': {
+      id: '/marketplace/'
+      path: '/'
+      fullPath: '/marketplace/'
+      preLoaderRoute: typeof MarketplaceIndexRouteImport
+      parentRoute: typeof MarketplaceRoute
+    }
+    '/profile/$address': {
+      id: '/profile/$address'
+      path: '/profile/$address'
+      fullPath: '/profile/$address'
+      preLoaderRoute: typeof ProfileAddressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/post/$id': {
       id: '/post/$id'
       path: '/post/$id'
@@ -212,19 +281,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/marketplace/$id': {
+      id: '/marketplace/$id'
+      path: '/$id'
+      fullPath: '/marketplace/$id'
+      preLoaderRoute: typeof MarketplaceIdRouteImport
+      parentRoute: typeof MarketplaceRoute
+    }
   }
 }
+
+interface MarketplaceRouteChildren {
+  MarketplaceIdRoute: typeof MarketplaceIdRoute
+  MarketplaceIndexRoute: typeof MarketplaceIndexRoute
+}
+
+const MarketplaceRouteChildren: MarketplaceRouteChildren = {
+  MarketplaceIdRoute: MarketplaceIdRoute,
+  MarketplaceIndexRoute: MarketplaceIndexRoute,
+}
+
+const MarketplaceRouteWithChildren = MarketplaceRoute._addFileChildren(
+  MarketplaceRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   HowItWorksRoute: HowItWorksRoute,
+  MarketplaceRoute: MarketplaceRouteWithChildren,
   NftsRoute: NftsRoute,
   RegisterRoute: RegisterRoute,
   TokenRoute: TokenRoute,
   WalletSetupRoute: WalletSetupRoute,
   WriteRoute: WriteRoute,
   PostIdRoute: PostIdRoute,
+  ProfileAddressRoute: ProfileAddressRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
