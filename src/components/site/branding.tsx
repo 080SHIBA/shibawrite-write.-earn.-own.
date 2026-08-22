@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import {
-  Wallet,
   Twitter,
   MessageCircle,
   Send,
@@ -10,6 +9,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConnectWallet } from "@/components/web3/ConnectWallet";
 
 export function ShibaMark() {
   return (
