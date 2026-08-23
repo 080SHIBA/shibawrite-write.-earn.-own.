@@ -2,7 +2,10 @@ import { http, createConfig } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
 
-const wcProjectId = import.meta.env["VITE_WALLETCONNECT_PROJECT_ID"] as string | undefined;
+/** Publishable WalletConnect Cloud project id (safe in client code). */
+const wcProjectId =
+  (import.meta.env["VITE_WALLETCONNECT_PROJECT_ID"] as string | undefined) ??
+  "36a0f0b7cb2d2a17f0aa22e2dd0e55e2";
 
 let cached: ReturnType<typeof createConfig> | undefined;
 
