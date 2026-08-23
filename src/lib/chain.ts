@@ -21,7 +21,7 @@ function findEventArg<T>(logs: readonly Log[], abi: readonly unknown[], eventNam
         abi: abi as never,
         data: log.data,
         topics: log.topics,
-      }) as { eventName: string; args: Record<string, unknown> };
+      }) as unknown as { eventName: string; args: Record<string, unknown> };
       if (decoded.eventName === eventName) return decoded.args[key] as T;
     } catch {
       /* log from another contract */
