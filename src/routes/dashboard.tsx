@@ -2,13 +2,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useWriteContract } from "wagmi";
-import { parseUnits, stringToHex } from "viem";
+import { useAccount, useWriteContract } from "wagmi";
 import { Coins, PenLine, Timer, Trophy, Wallet } from "lucide-react";
 import { AppShell, PageHeading } from "@/components/site/AppShell";
 import { Button } from "@/components/ui/button";
 import { claimReward, myPosts } from "@/lib/posts.functions";
 import { shibaWriteAbi } from "@/lib/abi/shibawrite";
+import { pendingRewardIdForPost } from "@/lib/chain";
 import { EXPLORER_URL, SHIBAWRITE_CONTRACT, TIER_LABEL } from "@/lib/contracts";
 import { shortAddress, useWriter } from "@/hooks/useWriter";
 
@@ -44,6 +44,7 @@ const STATUS_STYLE: Record<string, string> = {
 function DashboardPage() {
   const { token, writer, loading } = useWriter();
   const navigate = useNavigate();
+  const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const [claiming, setClaiming] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -73,14 +74,18 @@ function DashboardPage() {
   );
   const lifetime = Number(writer?.total_earned ?? 0);
 
-  const claim = async (postId: string, amount: number) => {
+  const claim = async (postId: string) => {
+    if (!address) return;
     setClaiming(postId);
     try {
+      const rewardId = await pendingRewardIdForPost(address, postId);
+      if (rewardId === null)
+        throw new Error("No claimable on-chain reward found for this post yet.");
       const hash = await writeContractAsync({
         address: SHIBAWRITE_CONTRACT,
         abi: shibaWriteAbi,
         functionName: "claimReward",
-        args: [stringToHex(postId.replace(/-/g, "").slice(0, 32), { size: 32 }), parseUnits(String(amount), 18), "0x"],
+        args: [rewardId],
       });
       await claimReward({ data: { token: token!, postId, txHash: hash } });
       toast.success("Reward claimed on-chain.");

@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useWriteContract } from "wagmi";
-import { stringToHex } from "viem";
 import { Gem, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/site/AppShell";
 import { Button } from "@/components/ui/button";
@@ -69,11 +68,7 @@ function PostPage() {
       const hash = await writeContractAsync({
         address: SHIBAWRITE_CONTRACT,
         abi: shibaWriteAbi,
-        functionName: "mintAchievement",
-        args: [
-          stringToHex(post.id.replace(/-/g, "").slice(0, 32), { size: 32 }),
-          BigInt(Math.round(Number(post.quality_score ?? 0))),
-        ],
+        functionName: "burnForNFTMint",
       });
       await mintAchievement({ data: { token, postId: post.id, txHash: hash } });
       toast.success("Soulbound achievement minted.");
