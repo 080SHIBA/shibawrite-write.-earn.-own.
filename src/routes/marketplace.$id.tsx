@@ -2,14 +2,16 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useWriteContract } from "wagmi";
-import { parseUnits, stringToHex } from "viem";
+import { useAccount, useWriteContract } from "wagmi";
+import { maxUint256, parseUnits } from "viem";
 import { ShieldCheck, ShoppingBag } from "lucide-react";
 import { AppShell } from "@/components/site/AppShell";
 import { Button } from "@/components/ui/button";
 import { buyProduct, listProducts } from "@/lib/market.functions";
 import { marketplaceAbi } from "@/lib/abi/marketplace";
-import { MARKETPLACE_CONTRACT, REWARD_CONFIG } from "@/lib/contracts";
+import { shibaWriteAbi } from "@/lib/abi/shibawrite";
+import { purchaseIdFromTx, waitForReceipt, wordAllowance } from "@/lib/chain";
+import { MARKETPLACE_CONTRACT, REWARD_CONFIG, SHIBAWRITE_CONTRACT } from "@/lib/contracts";
 import { shortAddress, useWriter } from "@/hooks/useWriter";
 
 export const Route = createFileRoute("/marketplace/$id")({
@@ -37,6 +39,7 @@ function ProductPage() {
   const { id } = Route.useParams();
   const { token, writer } = useWriter();
   const navigate = useNavigate();
+  const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const [buying, setBuying] = useState(false);
 
@@ -45,20 +48,40 @@ function ProductPage() {
   const seller = data?.writers.find((w) => w.id === product?.seller_id);
 
   const buy = async () => {
-    if (!token || !product || !seller) return;
+    if (!token || !product || !seller || !address) return;
     setBuying(true);
     try {
+      const chainProductId = (product as { chain_product_id?: number | null }).chain_product_id;
+      if (chainProductId === null || chainProductId === undefined)
+        throw new Error("This listing is not on-chain yet and cannot be purchased.");
+      const price = parseUnits(String(product.price_word), 18);
+
+      const allowance = await wordAllowance(address);
+      if (allowance < price) {
+        const approveHash = await writeContractAsync({
+          address: SHIBAWRITE_CONTRACT,
+          abi: shibaWriteAbi,
+          functionName: "approve",
+          args: [MARKETPLACE_CONTRACT, maxUint256],
+        });
+        await waitForReceipt(approveHash);
+      }
+
       const hash = await writeContractAsync({
         address: MARKETPLACE_CONTRACT,
         abi: marketplaceAbi,
-        functionName: "buyProduct",
-        args: [
-          stringToHex(product.id.replace(/-/g, "").slice(0, 32), { size: 32 }),
-          seller.wallet_address as `0x${string}`,
-          parseUnits(String(product.price_word), 18),
-        ],
+        functionName: "purchaseProduct",
+        args: [BigInt(chainProductId)],
       });
-      await buyProduct({ data: { token, productId: product.id, txHash: hash } });
+      const purchaseId = await purchaseIdFromTx(hash);
+      await buyProduct({
+        data: {
+          token,
+          productId: product.id,
+          txHash: hash,
+          chainPurchaseId: purchaseId === undefined ? null : Number(purchaseId),
+        },
+      });
       toast.success("Purchase complete — funds are in escrow for 1 hour.");
       void navigate({ to: "/marketplace" });
     } catch (e) {
