@@ -15,7 +15,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useWriteContract } from "wagmi";
+import { parseUnits } from "viem";
 import { createProduct, listProducts, myOrders, settleOrder } from "@/lib/market.functions";
+import { marketplaceAbi } from "@/lib/abi/marketplace";
+import { productIdFromTx } from "@/lib/chain";
+import { MARKETPLACE_CONTRACT } from "@/lib/contracts";
 import { CATEGORIES, REWARD_CONFIG } from "@/lib/contracts";
 import { shortAddress, useWriter } from "@/hooks/useWriter";
 
@@ -42,6 +47,7 @@ export const Route = createFileRoute("/marketplace/")({
 
 function SellDialog({ onDone }: { onDone: () => void }) {
   const { token, writer } = useWriter();
+  const { writeContractAsync } = useWriteContract();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -54,7 +60,23 @@ function SellDialog({ onDone }: { onDone: () => void }) {
     if (!token) return;
     setSaving(true);
     try {
-      await createProduct({ data: { token, title, description, category, priceWord: price } });
+      const hash = await writeContractAsync({
+        address: MARKETPLACE_CONTRACT,
+        abi: marketplaceAbi,
+        functionName: "listProduct",
+        args: [parseUnits(String(Math.max(1, Math.round(price))), 18), title.trim()],
+      });
+      const chainProductId = await productIdFromTx(hash);
+      await createProduct({
+        data: {
+          token,
+          title,
+          description,
+          category,
+          priceWord: price,
+          chainProductId: chainProductId === undefined ? null : Number(chainProductId),
+        },
+      });
       toast.success("Listing published.");
       setOpen(false);
       onDone();
@@ -134,6 +156,7 @@ function SellDialog({ onDone }: { onDone: () => void }) {
 
 function MarketplacePage() {
   const { token } = useWriter();
+  const { writeContractAsync } = useWriteContract();
   const { data, refetch } = useQuery({ queryKey: ["products"], queryFn: () => listProducts() });
   const orders = useQuery({
     queryKey: ["orders", token],
@@ -145,14 +168,35 @@ function MarketplacePage() {
     data?.writers.find((w) => w.id === id)?.name ||
     shortAddress(data?.writers.find((w) => w.id === id)?.wallet_address);
 
-  const settle = async (orderId: string, action: "release" | "dispute") => {
+  const settle = async (
+    orderId: string,
+    action: "release" | "dispute",
+    chainPurchaseId: number | null,
+  ) => {
     if (!token) return;
     try {
-      await settleOrder({ data: { token, orderId, action, reason: action === "dispute" ? "Buyer raised a dispute." : undefined } });
-      toast.success(action === "release" ? "Escrow released to the seller." : "Dispute opened for moderator review.");
+      if (chainPurchaseId !== null) {
+        await writeContractAsync({
+          address: MARKETPLACE_CONTRACT,
+          abi: marketplaceAbi,
+          functionName: action === "release" ? "confirmReceipt" : "raiseDispute",
+          args: [BigInt(chainPurchaseId)],
+        });
+      }
+      await settleOrder({
+        data: {
+          token,
+          orderId,
+          action,
+          reason: action === "dispute" ? "Buyer raised a dispute." : undefined,
+        },
+      });
+      toast.success(
+        action === "release" ? "Escrow released to the seller." : "Dispute opened for moderator review.",
+      );
       void orders.refetch();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not update order.");
+      toast.error(e instanceof Error ? e.message.split("\n")[0] : "Could not update order.");
     }
   };
 
@@ -215,13 +259,13 @@ function MarketplacePage() {
                   </span>
                   {o.status === "escrow" && (
                     <>
-                      <Button size="sm" variant="outline" className="border-border bg-transparent" onClick={() => settle(o.id, "dispute")}>
+                      <Button size="sm" variant="outline" className="border-border bg-transparent" onClick={() => settle(o.id, "dispute", (o as { chain_purchase_id?: number | null }).chain_purchase_id ?? null)}>
                         Dispute
                       </Button>
                       <Button
                         size="sm"
                         className="bg-gradient-gold text-electric-foreground shadow-gold hover:opacity-95"
-                        onClick={() => settle(o.id, "release")}
+                        onClick={() => settle(o.id, "release", (o as { chain_purchase_id?: number | null }).chain_purchase_id ?? null)}
                       >
                         Release funds
                       </Button>

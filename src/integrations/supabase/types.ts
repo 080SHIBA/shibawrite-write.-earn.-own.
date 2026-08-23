@@ -107,6 +107,7 @@ export type Database = {
       orders: {
         Row: {
           buyer_id: string
+          chain_purchase_id: number | null
           created_at: string
           escrow_release_at: string
           id: string
@@ -118,6 +119,7 @@ export type Database = {
         }
         Insert: {
           buyer_id: string
+          chain_purchase_id?: number | null
           created_at?: string
           escrow_release_at?: string
           id?: string
@@ -129,6 +131,7 @@ export type Database = {
         }
         Update: {
           buyer_id?: string
+          chain_purchase_id?: number | null
           created_at?: string
           escrow_release_at?: string
           id?: string
@@ -236,6 +239,7 @@ export type Database = {
       products: {
         Row: {
           category: string
+          chain_product_id: number | null
           cover_url: string | null
           created_at: string
           description: string
@@ -247,6 +251,7 @@ export type Database = {
         }
         Insert: {
           category: string
+          chain_product_id?: number | null
           cover_url?: string | null
           created_at?: string
           description?: string
@@ -258,6 +263,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          chain_product_id?: number | null
           cover_url?: string | null
           created_at?: string
           description?: string

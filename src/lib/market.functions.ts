@@ -20,6 +20,7 @@ export const createProduct = createServerFn({ method: "POST" })
       description: string;
       category: string;
       priceWord: number;
+      chainProductId?: number | null;
     }) => d,
   )
   .handler(async ({ data }) => {
@@ -35,6 +36,7 @@ export const createProduct = createServerFn({ method: "POST" })
         description: data.description.trim().slice(0, 2000),
         category: data.category,
         price_word: Math.max(1, Math.round(data.priceWord)),
+        chain_product_id: data.chainProductId ?? null,
       })
       .select("*")
       .single();
@@ -43,7 +45,9 @@ export const createProduct = createServerFn({ method: "POST" })
   });
 
 export const buyProduct = createServerFn({ method: "POST" })
-  .inputValidator((d: { token: string; productId: string; txHash: string }) => d)
+  .inputValidator(
+    (d: { token: string; productId: string; txHash: string; chainPurchaseId?: number | null }) => d,
+  )
   .handler(async ({ data }) => {
     const { admin, writerFromToken } = await import("./shiba.server");
     const { REWARD_CONFIG } = await import("@/lib/contracts");
@@ -64,6 +68,7 @@ export const buyProduct = createServerFn({ method: "POST" })
         seller_id: product.seller_id,
         price_word: product.price_word,
         tx_hash: data.txHash,
+        chain_purchase_id: data.chainPurchaseId ?? null,
         escrow_release_at: new Date(
           Date.now() + REWARD_CONFIG.escrowHours * 3_600_000,
         ).toISOString(),
