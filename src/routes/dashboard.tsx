@@ -181,7 +181,7 @@ function DashboardPage() {
                   <Button
                     size="sm"
                     disabled={claiming === p.id}
-                    onClick={() => claim(p.id, Number(p.reward_amount ?? 0))}
+                    onClick={() => claim(p.id)}
                     className="bg-gradient-gold text-electric-foreground shadow-gold hover:opacity-95"
                   >
                     {claiming === p.id ? "Claiming…" : "Claim"}
