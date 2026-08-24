@@ -1,11 +1,11 @@
-import { baseSepolia } from "viem/chains";
+import { sepolia } from "viem/chains";
 
-/** Deployed ShibaWrite contracts (Base Sepolia testnet). */
+/** Deployed ShibaWrite contracts (Ethereum Sepolia testnet, chain 11155111). */
 export const SHIBAWRITE_CONTRACT = "0xCBE5a8375ace094B178E203Cc11961403b3cb11E" as const;
 export const MARKETPLACE_CONTRACT = "0x6e4d777eFe9f425e56d0F9736F59b609Db66A1F3" as const;
 
-export const ACTIVE_CHAIN = baseSepolia;
-export const EXPLORER_URL = "https://sepolia.basescan.org";
+export const ACTIVE_CHAIN = sepolia;
+export const EXPLORER_URL = "https://sepolia.etherscan.io";
 
 export const REWARD_CONFIG = {
   /** $WORD per word — 30 $WORD per 150 words. */

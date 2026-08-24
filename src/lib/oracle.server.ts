@@ -1,6 +1,6 @@
 import process from "node:process";
 import { createPublicClient, http, keccak256, toHex, type Hex } from "viem";
-import { baseSepolia } from "viem/chains";
+import { sepolia } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { shibaWriteAbi } from "@/lib/abi/shibawrite";
 import { SHIBAWRITE_CONTRACT, CATEGORIES } from "@/lib/contracts";
@@ -11,7 +11,7 @@ import { SHIBAWRITE_CONTRACT, CATEGORIES } from "@/lib/contracts";
  */
 
 function client() {
-  return createPublicClient({ chain: baseSepolia, transport: http() });
+  return createPublicClient({ chain: sepolia, transport: http() });
 }
 
 function oracleAccount() {

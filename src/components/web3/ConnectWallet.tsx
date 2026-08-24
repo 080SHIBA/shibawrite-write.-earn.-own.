@@ -86,7 +86,7 @@ export function ConnectWallet({
           <DialogHeader>
             <DialogTitle className="font-display text-2xl">Connect Wallet</DialogTitle>
             <DialogDescription>
-              Sign in on Base Sepolia with a gasless signature — never a transaction.
+              Sign in on Ethereum Sepolia with a gasless signature — never a transaction.
             </DialogDescription>
           </DialogHeader>
 
