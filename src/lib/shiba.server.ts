@@ -23,7 +23,7 @@ export function siweMessage(address: string, nonce: string) {
     "",
     "Sign in to ShibaWrite. This is a gasless signature — it never moves funds.",
     "",
-    "Chain: Base Sepolia (84532)",
+    "Chain: Ethereum Sepolia (11155111)",
     `Nonce: ${nonce}`,
   ].join("\n");
 }
