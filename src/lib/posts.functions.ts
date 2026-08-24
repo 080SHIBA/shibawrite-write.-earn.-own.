@@ -162,3 +162,34 @@ export const publicProfile = createServerFn({ method: "POST" })
     const { data: nfts } = await db.from("nfts").select("*").eq("writer_id", writer.id);
     return { writer, posts: posts ?? [], nfts: nfts ?? [] };
   });
+
+/**
+ * Oracle signing step: returns a signed EIP-712 reward voucher for an
+ * approved post so the writer can submit ShibaWrite.approvePost(...) itself.
+ */
+export const signPostApproval = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string; postId: string }) => d)
+  .handler(async ({ data }) => {
+    const { admin, writerFromToken } = await import("./shiba.server");
+    const { signRewardVoucher } = await import("./oracle.server");
+    const writer = await writerFromToken(data.token);
+    const { data: post } = await admin()
+      .from("posts")
+      .select("*")
+      .eq("id", data.postId)
+      .eq("writer_id", writer.id)
+      .maybeSingle();
+    if (!post) throw new Error("Post not found.");
+    if (post.status !== "approved") throw new Error("Only approved posts can be signed.");
+    if (post.claim_available_at && new Date(post.claim_available_at) > new Date())
+      throw new Error("The anti-fraud hold has not finished yet.");
+
+    const voucher = await signRewardVoucher({
+      writer: writer.wallet_address as `0x${string}`,
+      postDbId: post.id,
+      wordCount: post.word_count,
+      category: post.category,
+      qualityScore: Number(post.quality_score ?? 0),
+    });
+    return { voucher };
+  });

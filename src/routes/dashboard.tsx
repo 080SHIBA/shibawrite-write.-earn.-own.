@@ -6,9 +6,9 @@ import { useAccount, useWriteContract } from "wagmi";
 import { Coins, PenLine, Timer, Trophy, Wallet } from "lucide-react";
 import { AppShell, PageHeading } from "@/components/site/AppShell";
 import { Button } from "@/components/ui/button";
-import { claimReward, myPosts } from "@/lib/posts.functions";
+import { claimReward, myPosts, signPostApproval } from "@/lib/posts.functions";
 import { shibaWriteAbi } from "@/lib/abi/shibawrite";
-import { pendingRewardIdForPost } from "@/lib/chain";
+import { pendingRewardIdForPost, waitForReceipt } from "@/lib/chain";
 import { EXPLORER_URL, SHIBAWRITE_CONTRACT, TIER_LABEL } from "@/lib/contracts";
 import { shortAddress, useWriter } from "@/hooks/useWriter";
 
@@ -78,7 +78,29 @@ function DashboardPage() {
     if (!address) return;
     setClaiming(postId);
     try {
-      const rewardId = await pendingRewardIdForPost(address, postId);
+      let rewardId = await pendingRewardIdForPost(address, postId);
+      if (rewardId === null) {
+        // Oracle signing step: server signs the reward voucher, writer submits it.
+        toast.info("Verifying your post with the oracle…");
+        const { voucher } = await signPostApproval({ data: { token: token!, postId } });
+        const approveHash = await writeContractAsync({
+          address: SHIBAWRITE_CONTRACT,
+          abi: shibaWriteAbi,
+          functionName: "approvePost",
+          args: [
+            voucher.writer,
+            voucher.postId as `0x${string}`,
+            BigInt(voucher.wordCount),
+            voucher.categoryId,
+            BigInt(voucher.qualityScore),
+            BigInt(voucher.nonce),
+            BigInt(voucher.expiry),
+            voucher.signature as `0x${string}`,
+          ],
+        });
+        await waitForReceipt(approveHash);
+        rewardId = await pendingRewardIdForPost(address, postId);
+      }
       if (rewardId === null)
         throw new Error("No claimable on-chain reward found for this post yet.");
       const hash = await writeContractAsync({
