@@ -6,9 +6,9 @@ import { useAccount, useWriteContract } from "wagmi";
 import { Coins, PenLine, Timer, Trophy, Wallet } from "lucide-react";
 import { AppShell, PageHeading } from "@/components/site/AppShell";
 import { Button } from "@/components/ui/button";
-import { claimReward, myPosts } from "@/lib/posts.functions";
+import { claimReward, myPosts, signPostApproval } from "@/lib/posts.functions";
 import { shibaWriteAbi } from "@/lib/abi/shibawrite";
-import { pendingRewardIdForPost } from "@/lib/chain";
+import { pendingRewardIdForPost, waitForReceipt } from "@/lib/chain";
 import { EXPLORER_URL, SHIBAWRITE_CONTRACT, TIER_LABEL } from "@/lib/contracts";
 import { shortAddress, useWriter } from "@/hooks/useWriter";
 
