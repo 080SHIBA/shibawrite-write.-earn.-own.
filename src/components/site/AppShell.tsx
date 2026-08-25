@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { ShibaMark } from "@/components/site/branding";
 import { ConnectWallet } from "@/components/web3/ConnectWallet";
+import { NetworkGuard } from "@/components/web3/NetworkGuard";
 
 const nav = [
   { l: "Dashboard", to: "/dashboard" as const },
@@ -9,6 +10,7 @@ const nav = [
   { l: "Achievements", to: "/nfts" as const },
   { l: "Marketplace", to: "/marketplace" as const },
   { l: "$WORD", to: "/token" as const },
+  { l: "Admin", to: "/admin" as const },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -37,6 +39,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <ConnectWallet />
         </div>
       </header>
+      <NetworkGuard />
       <main className="mx-auto max-w-7xl px-6 py-10">{children}</main>
     </div>
   );
