@@ -138,3 +138,18 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Running on your own computer
+
+The preview inside Lovable supplies the private backend key automatically. When you
+export the code and run it locally, wallet sign-in and any other server logic that
+writes to the database need that key too:
+
+```
+SUPABASE_SERVICE_ROLE_KEY=your-own-service-role-key
+```
+
+Add it to your local `.env`, alongside the public values. This key is not retrievable
+for the Lovable-managed backend, so for local runs point the app at your own backend
+project (its URL, publishable key and service role key) or do wallet testing in the
+Lovable preview.
