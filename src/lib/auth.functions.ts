@@ -6,7 +6,8 @@ export const requestNonce = createServerFn({ method: "POST" })
     const { admin, siweMessage } = await import("./shiba.server");
     const address = data.address.toLowerCase();
     const nonce = crypto.randomUUID();
-    await admin().from("wallet_nonces").insert({ nonce, wallet_address: address });
+    const { error } = await admin().from("wallet_nonces").insert({ nonce, wallet_address: address });
+    if (error) throw new Error(`Could not prepare wallet sign-in: ${error.message}`);
     return { nonce, message: siweMessage(data.address, nonce) };
   });
 
@@ -33,7 +34,11 @@ export const verifyWallet = createServerFn({ method: "POST" })
     });
     if (!valid) throw new Error("Signature verification failed.");
 
-    await db.from("wallet_nonces").update({ used: true }).eq("nonce", data.nonce);
+    const { error: nonceUpdateError } = await db
+      .from("wallet_nonces")
+      .update({ used: true })
+      .eq("nonce", data.nonce);
+    if (nonceUpdateError) throw nonceUpdateError;
 
     let { data: writer } = await db
       .from("writers")
@@ -52,9 +57,10 @@ export const verifyWallet = createServerFn({ method: "POST" })
 
     const token = randomToken();
     const expires = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString();
-    await db
+    const { error: sessionError } = await db
       .from("wallet_sessions")
       .insert({ token, writer_id: writer.id, wallet_address: address, expires_at: expires });
+    if (sessionError) throw sessionError;
 
     return { token, writer, registered: writer.name.length > 0 };
   });
