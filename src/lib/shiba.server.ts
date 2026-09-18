@@ -3,12 +3,18 @@ import type { Database } from "@/integrations/supabase/types";
 import { REWARD_CONFIG, categoryMultiplier, tierFor } from "@/lib/contracts";
 
 export function admin() {
-  return createClient<Database>(
-    process.env["SUPABASE_URL"]!,
-    process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  );
+  const url = process.env["SUPABASE_URL"];
+  const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"];
+  if (!url || !serviceKey) {
+    throw new Error(
+      "Backend is not configured on this machine. Wallet sign-in needs the private backend key (SUPABASE_SERVICE_ROLE_KEY) in your local .env file. It works automatically inside Lovable.",
+    );
+  }
+  return createClient<Database>(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
+
 
 export type Writer = Database["public"]["Tables"]["writers"]["Row"];
 
